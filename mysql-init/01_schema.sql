@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS retail_db;
+USE retail_db;
+
+CREATE TABLE IF NOT EXISTS transactions (
+  txn_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  txn_ts TIMESTAMP NOT NULL,
+  customer_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  qty INT NOT NULL,
+  amount_thb DECIMAL(12,2) NOT NULL
+);

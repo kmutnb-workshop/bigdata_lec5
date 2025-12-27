@@ -1,0 +1,101 @@
+services:
+  # JupyterLab
+  jupyterlab:
+    build:
+      context: ./jupyterlab
+      dockerfile: Dockerfile
+    hostname: jupyterlab
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=easytoken  # รหัสเข้า Jupyter ง่ายๆ สำหรับ Lab
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    networks: [bigdata-net]
+    depends_on:
+      - minio
+    entrypoint: ["/usr/local/bin/jupyterlab_entrypoint.sh"]
+
+  # ===== Object Storage (Lakehouse + Docs + Audit) =====
+  minio:
+    image: minio/minio:latest
+    hostname: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin12345
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Console
+    volumes:
+      - minio_data:/data
+    networks: [bigdata-net]
+
+  minio-mc:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 admin admin12345;
+      mc mb -p local/lakehouse || true;
+      mc mb -p local/librarydocs || true;
+      mc mb -p local/audit || true;
+      echo 'MinIO buckets ready: lakehouse, librarydocs, audit';
+      tail -f /dev/null
+      "
+    networks: [bigdata-net]
+
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    hostname: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      # ตั้งค่า User/Pass เบื้องต้น (ถ้า Notebook ไม่ได้ใส่ User/Pass ให้แก้ Connection String หรือลบส่วนนี้)
+      # แต่ตาม Notebook แล็บนี้ใช้แบบ No Auth ได้ หรือใช้ Default
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - bigdata-net
+
+  # Mongo Express (Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express
+    hostname: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongo:27017/
+    networks:
+      - bigdata-net
+    depends_on:
+      - mongo
+
+  # Qdrant (Vector Database)
+  qdrant:
+    image: qdrant/qdrant:v1.16.2
+    hostname: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks: [bigdata-net]
+
+
+networks:
+  bigdata-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  qdrant_data:
+  minio_data:  
