@@ -1,0 +1,86 @@
+{
+  "audit_timestamp": "2025-12-27T10:18:21.178312",
+  "dataset_name": "users_dataset",
+  "total_records": 1000000,
+  "data_quality_checks": [
+    {
+      "check_id": "DQ001",
+      "check_name": "Age Outlier Detection",
+      "description": "ตรวจสอบอายุที่ผิดปกติ (< 18 หรือ > 80)",
+      "status": "WARNING",
+      "outlier_count": 229,
+      "outlier_percentage": 0.02,
+      "valid_records": 999771,
+      "threshold": "age < 18 or age > 80"
+    },
+    {
+      "check_id": "DQ002",
+      "check_name": "Null Value Check",
+      "description": "ตรวจสอบค่าที่เป็น null ในแต่ละคอลัมน์",
+      "status": "PASS",
+      "null_counts": {
+        "user_id": 0,
+        "name": 0,
+        "email": 0,
+        "birthdate": 0,
+        "salary": 0,
+        "signup_date": 0,
+        "age": 0,
+        "masked_email": 0,
+        "salary_class": 0,
+        "age_outlier": 0
+      },
+      "total_nulls": 0,
+      "columns_with_nulls": []
+    },
+    {
+      "check_id": "DQ003",
+      "check_name": "Duplicate User ID Check",
+      "description": "ตรวจสอบ user_id ที่ซ้ำกัน",
+      "status": "PASS",
+      "duplicate_count": 0,
+      "duplicate_percentage": 0.0
+    },
+    {
+      "check_id": "DQ004",
+      "check_name": "Salary Range Validation",
+      "description": "ตรวจสอบช่วงเงินเดือน (ควรอยู่ระหว่าง 30,000 - 150,000)",
+      "status": "PASS",
+      "salary_min": 30000,
+      "salary_max": 150000,
+      "salary_mean": 89987.98,
+      "salary_std": 34635.95,
+      "expected_range": {
+        "min": 30000,
+        "max": 150000
+      }
+    },
+    {
+      "check_id": "DQ005",
+      "check_name": "Email Format Validation",
+      "description": "ตรวจสอบรูปแบบ email (ต้องมี @)",
+      "status": "PASS",
+      "invalid_email_count": 0,
+      "invalid_email_percentage": 0.0
+    },
+    {
+      "check_id": "DQ006",
+      "check_name": "Age Range Validation",
+      "description": "ตรวจสอบช่วงอายุ (ควรอยู่ระหว่าง 18 - 80)",
+      "status": "WARNING",
+      "age_min": 18,
+      "age_max": 81,
+      "age_mean": 49.02,
+      "expected_range": {
+        "min": 18,
+        "max": 80
+      }
+    }
+  ],
+  "summary": {
+    "total_checks": 6,
+    "passed": 4,
+    "warnings": 2,
+    "failed": 0
+  }
+}
